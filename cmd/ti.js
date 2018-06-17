@@ -1,0 +1,1 @@
+require('./trashInfo.js');

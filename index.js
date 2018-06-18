@@ -215,42 +215,39 @@ function runAlias(){
 }
 
 function changeTheme() {
-    inquirer
-  .prompt([
-    {
-      type: 'list',
-      name: 'theme',
-      message: 'choose theme',
-      choices: [
-        'solance',
-        'dark',
-        'paradise',
-        'swirl',
-        'orange future',
-        'leave',
-        'cool magazine',
-      ]
-    },
-])
-  .then(res => {
-    function setWp(imgName){
-		const wpCmd = (require('os').homedir() + '/bin/wal/wal -i ~/Dropbox/lnx/wp/' + imgName);
-        shell.exec(rootDir + '/action/run.sh . ' + wpCmd);
-    }
-    const th = res.theme;
+    const images = [];
+    const wpPath = require('os').homedir()+'/Dropbox/lnx/wp';
 
-    if (th === 'solance'){ setWp('solance.jpg')}
-    if (th === 'dark'){ setWp('1504928142752.jpg')}
-    if (th === 'paradise'){ setWp('pink-cloud.png')}
-    if (th === 'swirl'){ setWp('swirl.png')}
-    if (th === 'orange future'){ setWp('orange-future.png')}
-    if (th === 'leave'){ setWp('morningleave.jpg')}
-    if (th === 'cool magazine'){ setWp('cool-magazine.jpg')}
-
-    console.log('\r\n theme changed to ' + th);
-    process.exit();
-  });
-
+    fs.readdir(wpPath, (err, files) => {
+        files.forEach(file => {
+            images.push(file);
+        });
+    })
+    function searchImages(answers, input) {
+          input = input || '';
+          return new Promise(function(resolve) {
+                  setTimeout(function() {
+                            var fuzzyResult = fuzzy.filter(input, images);
+                            resolve(fuzzyResult.map(function(el) {
+                                        return el.original;
+                                      }));
+                          }, _.random(30, 500));});}
+    inquirer.prompt([{
+                  type: 'autocomplete',
+                  name: 'image',
+                  suggestOnly: false,
+                  message: 'hn  -   change theme - choose image to generate colorscheme',
+                  source: searchImages,
+                  pageSize: 15,
+                  validate: function(val) {
+                            return val
+                              ? true
+                              : 'Type to search images..';}}
+	]).then(function(res) {
+        const imgPath = wpPath + '/' + res.image;
+        const wal = (require('os').homedir() + '/bin/wal/wal');
+        childpro.execFileSync(wal, ['-i', imgPath], {stdio: 'inherit'});
+    });
 }
 
 function monitor() {
@@ -413,31 +410,19 @@ function runWeb() {
                         : '..';}}
 	]).then(function(res) {
         console.log(res.website);
-        //const urlPar = '--app='+ res.website;
-        //shell.exec('google-chrome --app="'+ urlPar +'"');
-        childpro.execFileSync('google-chrome', [res.website], {stdio: 'inherit'});
-        //process.exit();
-    });
-
+        childpro.execFileSync('google-chrome', [res.website], {stdio: 'inherit'});});
 }
 
 function addWebsite(site){
-    inquirer.prompt([
-    {
+    inquirer.prompt([{
         type: 'input',
         name: 'site',
-        message: "tell me the website url to add: ",
-    }
+        message: "tell me the website url to add: ",}
         ]).then(function(res) {
         function w(path, data){
-            fs.appendFileSync(path, data);
-        };
+            fs.appendFileSync(path, data);};
         const path =  require('os').homedir() + '/.websites';
-
-        // TODO: check for headNote if cmd exists
         w(path, res.site + '\r\n');
-
-        console.log(res.site, ' added ');
-    });
+        console.log(res.site, ' added ');});
 }
 

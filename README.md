@@ -1,23 +1,45 @@
 # hn
-![hn example](https://i.imgur.com/BApqgSv.png "hn example screen")
+![hn example](https://i.imgur.com/PnfvYRj.png "hn example screen")
 
-## a bash command shortcut runner
+## simple nodejs bash and js command shortcut runner
 
 ### requirements
-* nodejs & npm > 5.6
-* unix
+* npm >= 5.6
+* node >= 8
 
 ### optional requirements
 #### system monitors
 * [gtop](https://github.com/aksakalli/gtop)
 * [htop](https://github.com/hishamhm/htop)
-* top
 * [bmon](https://github.com/tgraf/bmon)
-* netmon
 
 #### theme changer
-* wallpapers (the wallpaper in screenshot is from [duzochukwu](https://www.eyeem.com/u/duzochukwu)
 * [wal color scheme generator script](https://github.com/dylanaraps/wal)
+
+#### Features
+
+* console prompt with arrow navigation and live search while typing
+
+* run bash and js commands
+* shortcuts for ssh connections
+* shortctus for project directory
+* shortctus for bash aliases
+* shortcuts to open websites in chrome
+* add js or bash commands
+* add websites to list
+* change wallpaper and colorscheme with wal and feh
+* suspend (sleep)
+* shutdown
+
+#### files and directoris I use with hn (example)
+
+(to be changed at top of index.js)
+
+* bash aliases `~/.bash_aliases`
+* website list `~/.websites`
+* project dir `~/web/`
+* Wallper dir `~/Dropbox/lnx/wp/`
+* wal script `~/bin/wal/wal/`
 
 #### installation
 
@@ -29,7 +51,13 @@
 
 #### usage
 
-* `hn v`
-* `hn help`
-* `hn gs`
-* `hn`
+run commands like this:
+
+* `hn v`    -   version
+* `hn help` -   help info
+* `hn gs`   -   git status
+* `hn`      -   main menu
+
+it is also possible to run hn commands directly:
+
+* `hn ls`

@@ -61,7 +61,7 @@ function searchMenuChoices(answers, input) {
             suggestOnly: false,
             message: '  hn',
             source: searchMenuChoices,
-            pageSize: 5,
+            pageSize: 13,
             validate: function(val) {
                 return val
                     ? true
@@ -434,7 +434,7 @@ function addWebsite(site){
         };
         const path =  require('os').homedir() + '/.websites';
 
-        // TODO: check for headNote if exists
+        // TODO: check for headNote if cmd exists
         w(path, res.site + '\r\n');
 
         console.log(res.site, ' added ');

@@ -29,12 +29,18 @@ cmdList.forEach(function( el ){
 });
 
 const choices = [
-        'run node.js cmd',
+        'run command',
         'ssh',
-        'run alias',
+        'web',
+        'projects',
+        'aliases',
         'add cmd',
+        'add website',
         'monitor',
         'change theme',
+        'sleep',
+        'shutdown',
+        'exit',
       ]
 
 function searchMenuChoices(answers, input) {
@@ -62,12 +68,20 @@ function searchMenuChoices(answers, input) {
                         : '..';}}
 	]).then(function(res) {
     console.log(res.cmd);
-    if (res.cmd === 'run alias'){runAlias();}
+    if (res.cmd === 'aliases'){runAlias();}
     else if (res.cmd === 'change theme'){changeTheme();}
     else if (res.cmd === 'monitor'){monitor();}
-    else if (res.cmd === 'run node.js cmd'){runCmd();}
+    else if (res.cmd === 'run command'){runCmd();}
     else if (res.cmd === 'add cmd'){addCmd();}
+    else if (res.cmd === 'add website'){addWebsite();}
     else if (res.cmd === 'ssh'){runSsh();}
+    else if (res.cmd === 'projects'){runProjects();}
+    else if (res.cmd === 'web'){runWeb();}
+    else if (res.cmd === 'sleep'){
+        childpro.execFileSync('sudo', ['pm-suspend'], {stdio: 'inherit'});}
+    else if (res.cmd === 'shutdown'){
+        childpro.execFileSync('shutdown', ['now'], {stdio: 'inherit'});}
+    else if (res.cmd === 'exit'){process.exit();}
     });
 
 
@@ -286,7 +300,6 @@ function runSsh() {
         });
     }
 
-
     function searchSSHChoices(answers, input) {
     input = input || '';
     return new Promise(function(resolve) {
@@ -315,6 +328,116 @@ function runSsh() {
         // connect to res.ssh
         childpro.execFileSync('ssh', [res.ssh], {stdio: 'inherit'});
     });
+}
 
+function runProjects(){
+    const proDir = require('os').homedir() + '/web';
+    const proList = [];
+    fs.readdirSync(proDir).forEach(file => {
+        proList.push(file);
+    })
+
+    function searchProjects(answers, input) {
+    input = input || '';
+    return new Promise(function(resolve) {
+        setTimeout(function() {
+            var fuzzyResult = fuzzy.filter(input, proList);
+            resolve(fuzzyResult.map(function(el) {
+                return el.original;
+            }));
+        }, _.random(30, 500));
+    });
+}
+    inquirer.prompt([
+          {
+            type: 'autocomplete',
+            name: 'pro',
+            suggestOnly: false,
+            message: '  hn - projects',
+            source: searchProjects,
+            pageSize: 10,
+            validate: function(val) {
+                return val
+                    ? true
+                        : '..';}}
+	]).then(function(res) {
+        const resPath = proDir + '/' + res.pro;
+        console.log('   opening:    ' + resPath);
+        //require(cmdDir + 'ls.js');
+        //shell.exec('vim ' + resPath);
+        childpro.execFileSync('vim' , [resPath], {cwd: resPath, stdio: 'inherit'});
+        //childpro.execFileSync('sh',[(cmdDir+'run.sh'), 'cd', [resPath]], {cwd: resPath, stdio: 'inherit'});
+        //process.exit();
+    });
 
 }
+
+function runWeb() {
+    const webList = [];
+    const webFile = require('os').homedir() + '/.websites';
+
+    fs.readFile( webFile, 'utf8',
+      function (err, data) {
+       if(err) throw err;
+        fillSshList(data.match(/[^\r\n]+/g));
+    });
+
+    function fillSshList(sites){
+        sites.forEach(function(site){
+            webList.push(site);
+        });
+    }
+
+    function searchWebsites(answers, input) {
+    input = input || '';
+    return new Promise(function(resolve) {
+        setTimeout(function() {
+            var fuzzyResult = fuzzy.filter(input, webList);
+            resolve(fuzzyResult.map(function(el) {
+                return el.original;
+            }));
+        }, _.random(30, 500));
+    });
+}
+    inquirer.prompt([
+          {
+            type: 'autocomplete',
+            name: 'website',
+            suggestOnly: false,
+            message: '  hn - websites',
+            source: searchWebsites,
+            pageSize: 10,
+            validate: function(val) {
+                return val
+                    ? true
+                        : '..';}}
+	]).then(function(res) {
+        console.log(res.website);
+        //const urlPar = '--app='+ res.website;
+        //shell.exec('google-chrome --app="'+ urlPar +'"');
+        childpro.execFileSync('google-chrome', [res.website], {stdio: 'inherit'});
+        //process.exit();
+    });
+
+}
+
+function addWebsite(site){
+    inquirer.prompt([
+    {
+        type: 'input',
+        name: 'site',
+        message: "tell me the website url to add: ",
+    }
+        ]).then(function(res) {
+        function w(path, data){
+            fs.appendFileSync(path, data);
+        };
+        const path =  require('os').homedir() + '/.websites';
+
+        // TODO: check for headNote if exists
+        w(path, res.site + '\r\n');
+
+        console.log(res.site, ' added ');
+    });
+}
+

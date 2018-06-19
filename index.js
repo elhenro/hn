@@ -1,7 +1,10 @@
 const pathToHn = '/web/hn';
 const rootDir = require('os').homedir() + pathToHn;
 const cmdDir = rootDir + '/cmd/';
+
 const os = 'macOs';
+// determine os
+const isOsx = process.platform === 'darwin';
 
 const shell = require('shelljs');
 const inquirer = require('inquirer');
@@ -211,7 +214,7 @@ function runProjects(){
 }
 
 function runWeb() {
-    if (os === 'macOs') {
+    if (isOsx) {
         liveSearchInFileLines(require('os').homedir() + '/.websites', 'websites', 'hn - websites', 10, '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '--kiosk')
     } else {
         liveSearchInFileLines(require('os').homedir() + '/.websites', 'websites', 'hn - websites', 10, 'google-chrome')
@@ -265,8 +268,7 @@ function liveSearchOptionsFromDir(dir, name, message, listSize, command){
         const resPath = searchDir + '/' + res.item;
         const imgPath = '"' + resPath + '"';
         if (command === 'wal'){
-            if (os === 'macOs') {
-                //console.log('selected: ' + imgPath);
+            if (isOsx) {
                 // note that this will shuffle (select random image from dir) if system settings/wallpaper is using the same directory
                 childpro.execFileSync('osascript', ['-e', ('tell application "Finder" to set desktop picture to POSIX file '+ imgPath +'')], {silent: false, stdio: 'inherit'});
             }else{

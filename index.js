@@ -2,6 +2,10 @@ const pathToHn = '/web/hn';
 const rootDir = require('os').homedir() + pathToHn;
 const cmdDir = rootDir + '/cmd/';
 
+const os = 'macOs';
+// determine os
+const isOsx = process.platform === 'darwin';
+
 const shell = require('shelljs');
 const inquirer = require('inquirer');
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
@@ -28,6 +32,12 @@ cmdList.forEach(function( el ){
 
 if ( pars[0] === 'pro'){
     runProjects();
+} else
+if ( pars[0] === 'w'){
+    runWeb();
+} else
+if ( pars[0] === 'web'){
+    runWeb();
 } else
 if ( pars[0] === 'p'){
     runProjects();
@@ -67,6 +77,7 @@ const choices = [
         'aliases',
         'music',
         'add cmd',
+        'edit cmd',
         'add website',
         'monitor',
         'change theme',
@@ -105,6 +116,7 @@ const choices = [
     else if (res.cmd === 'monitor'){monitor();}
     else if (res.cmd === 'run command'){runCmd();}
     else if (res.cmd === 'add cmd'){addCmd();}
+    else if (res.cmd === 'edit cmd'){editCmd();}
     else if (res.cmd === 'add website'){addWebsite();}
     else if (res.cmd === 'ssh'){runSsh();}
     else if (res.cmd === 'projects'){runProjects();}
@@ -202,7 +214,11 @@ function runProjects(){
 }
 
 function runWeb() {
-    liveSearchInFileLines(require('os').homedir() + '/.websites', 'websites', 'hn - websites', 10, 'google-chrome')
+    if (isOsx) {
+        liveSearchInFileLines(require('os').homedir() + '/.websites', 'websites', 'hn - websites', 10, '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '--kiosk')
+    } else {
+        liveSearchInFileLines(require('os').homedir() + '/.websites', 'websites', 'hn - websites', 10, 'google-chrome')
+    }
 }
 
 function addWebsite(site){
@@ -214,12 +230,16 @@ function addWebsite(site){
         function w(path, data){
             fs.appendFileSync(path, data);};
         const path =  require('os').homedir() + '/.websites';
-        w(path, res.site + '\r\n');
+        u(path, res.site + '\r\n');
         console.log(res.site, ' added ');});
 }
 
 function runMusic() {
     liveSearchOptionsFromDir('Music', 'music', '  hn - music', 20, 'mpv');
+}
+
+function editCmd() {
+    liveSearchOptionsToEdit(pathToHn+'/cmd', 'cmd', '  hn - edit command', 5, 'vim');
 }
 
 function liveSearchOptionsFromDir(dir, name, message, listSize, command){
@@ -246,10 +266,15 @@ function liveSearchOptionsFromDir(dir, name, message, listSize, command){
             validate: function(val) {return val? true: '..';}}
 	]).then(function(res) {
         const resPath = searchDir + '/' + res.item;
+        const imgPath = '"' + resPath + '"';
         if (command === 'wal'){
-            console.log(require('os').homedir()+'/bin/wal/wal' + '-i' + resPath);
-            childpro.execFileSync(require('os').homedir()+'/bin/wal/wal' , ['-i', resPath], {silent: false, stdio: 'inherit'});
-            require('./cmd/c.js');
+            if (isOsx) {
+                // note that this will shuffle (select random image from dir) if system settings/wallpaper is using the same directory
+                childpro.execFileSync('osascript', ['-e', ('tell application "Finder" to set desktop picture to POSIX file '+ imgPath +'')], {silent: false, stdio: 'inherit'});
+            }else{
+                childpro.execFileSync(require('os').homedir()+'/bin/wal/wal' , ['-i', resPath], {silent: false, stdio: 'inherit'});
+                require('./cmd/c.js');
+            }
         } else {
             childpro.execFileSync(command , [resPath], {stdio: 'inherit'});
         }
@@ -282,9 +307,38 @@ function liveSearchOptionsToRequire(dir, name, message, listSize){
         require(cmdDir + res.item);
     });
 }
-function liveSearchInFileLines(file, name, message, listSize, command){
-    const List = [];
+function liveSearchOptionsToEdit(dir, name, message, listSize, command){
+    const searchDir = require('os').homedir()+'/'+ dir;
+    const searchList = [];
+    fs.readdirSync(searchDir).forEach(file => {
+        searchList.push(file);
+    })
+    function search(answers, input) {
+    input = input || '';
+    return new Promise(function(resolve) {
+        setTimeout(function() {
+            var fuzzyResult = fuzzy.filter(input, searchList);
+            resolve(fuzzyResult.map(function(el) {
+                return el.original;
+            }));}, _.random(30, 500));});}
+    inquirer.prompt([{
+            type: 'autocomplete',
+            name: 'item',
+            suggestOnly: false,
+            message: message,
+            source: search,
+            pageSize: listSize,
+            validate: function(val) {return val? true: '..';}}
+	]).then(function(res) {
+        const resPath = searchDir + '/' + res.item;
+        //console.log(command, res.item);
+        const itemPath = cmdDir + res.item;
+        childpro.execFileSync(command, [itemPath], {stdio: 'inherit'});
+    });
+}
 
+function liveSearchInFileLines(file, name, message, listSize, command, par1, par2){
+    const List = [];
     fs.readFile( file, 'utf8',
       function (err, data) {
        if(err) throw err;
@@ -318,13 +372,13 @@ function liveSearchInFileLines(file, name, message, listSize, command){
 	]).then(function(res) {
         console.log(res.item);
         // remove bash alias='...' strucutre
-        if (command === (rootDir + '/action/run.sh') || 'ssh' ){
+        if (command === (rootDir + '/action/run.sh')){
             const alias = res.item.split('=');
             const cmd = alias[1].substring(1, (alias[1]).length - 1);
             console.log(cmd);
             childpro.execFileSync(command, [cmd], {stdio: 'inherit'});
         } else {
-            childpro.execFileSync(command, [res.item], {stdio: 'inherit'});
+            childpro.execFileSync(command, [res.item, par1, par2], {stdio: 'inherit'});
         }
     });
 }

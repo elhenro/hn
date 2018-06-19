@@ -211,7 +211,11 @@ function runProjects(){
 }
 
 function runWeb() {
-    liveSearchInFileLines(require('os').homedir() + '/.websites', 'websites', 'hn - websites', 10, 'google-chrome')
+    if (os === 'macOs') {
+        liveSearchInFileLines(require('os').homedir() + '/.websites', 'websites', 'hn - websites', 10, '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '--kiosk')
+    } else {
+        liveSearchInFileLines(require('os').homedir() + '/.websites', 'websites', 'hn - websites', 10, 'google-chrome')
+    }
 }
 
 function addWebsite(site){
@@ -331,7 +335,7 @@ function liveSearchOptionsToEdit(dir, name, message, listSize, command){
     });
 }
 
-function liveSearchInFileLines(file, name, message, listSize, command){
+function liveSearchInFileLines(file, name, message, listSize, command, par1, par2){
     const List = [];
     fs.readFile( file, 'utf8',
       function (err, data) {
@@ -366,13 +370,13 @@ function liveSearchInFileLines(file, name, message, listSize, command){
 	]).then(function(res) {
         console.log(res.item);
         // remove bash alias='...' strucutre
-        if (command === (rootDir + '/action/run.sh') || 'ssh' ){
+        if (command === (rootDir + '/action/run.sh')){
             const alias = res.item.split('=');
             const cmd = alias[1].substring(1, (alias[1]).length - 1);
             console.log(cmd);
             childpro.execFileSync(command, [cmd], {stdio: 'inherit'});
         } else {
-            childpro.execFileSync(command, [res.item], {stdio: 'inherit'});
+            childpro.execFileSync(command, [res.item, par1, par2], {stdio: 'inherit'});
         }
     });
 }

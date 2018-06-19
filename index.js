@@ -29,6 +29,12 @@ cmdList.forEach(function( el ){
 if ( pars[0] === 'pro'){
     runProjects();
 } else
+if ( pars[0] === 'w'){
+    runWeb();
+} else
+if ( pars[0] === 'web'){
+    runWeb();
+} else
 if ( pars[0] === 'p'){
     runProjects();
 } else

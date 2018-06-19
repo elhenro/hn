@@ -248,8 +248,14 @@ function liveSearchOptionsFromDir(dir, name, message, listSize, command){
         const resPath = searchDir + '/' + res.item;
         if (command === 'wal'){
             console.log(require('os').homedir()+'/bin/wal/wal' + '-i' + resPath);
-            childpro.execFileSync(require('os').homedir()+'/bin/wal/wal' , ['-i', resPath], {silent: false, stdio: 'inherit'});
-            require('./cmd/c.js');
+
+            // linux with wal
+            //childpro.execFileSync(require('os').homedir()+'/bin/wal/wal' , ['-i', resPath], {silent: false, stdio: 'inherit'});
+
+            // macOs alternative (only wp, no scheme)
+            childpro.execFileSync('osascript', ['-e', ('tell application "Finder" to set desktop picture to POSIX file "'+ resPath +'"')], {silent: false, stdio: 'inherit'});
+
+            //require('./cmd/c.js');
         } else {
             childpro.execFileSync(command , [resPath], {stdio: 'inherit'});
         }

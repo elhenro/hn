@@ -1,10 +1,10 @@
 # hn
 ![hn usage exmaple](https://i.imgur.com/yzsfDmS.gif)
 
-## simple nodejs bash and js command shortcut runner
+## node.js cli shortcut manager
 
 ### requirements
-* npm >= 5.6
+* npm >= 5
 * node >= 8
 
 ### optional requirements

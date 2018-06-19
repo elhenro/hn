@@ -13,6 +13,7 @@
     "inquirer": "^6.0.0",
     "inquirer-autocomplete-prompt": "^0.12.2",
     "lodash": "^4.17.10",
+    "nexe": "^2.0.0-rc.30",
     "promise": "^8.0.1",
     "shelljs": "^0.8.2",
     "tty": "^1.0.1"

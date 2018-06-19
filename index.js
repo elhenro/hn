@@ -5,7 +5,6 @@ const cmdDir = rootDir + '/cmd/';
 const shell = require('shelljs');
 const inquirer = require('inquirer');
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
-
 const fuzzy = require('fuzzy');
 const _ = require('lodash');
 const Promise = require('promise');

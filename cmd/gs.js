@@ -1,7 +1,5 @@
 //git status
-
-const shell = require('shelljs');
-
-shell.exec('git status');
+const childpro = require('child_process');
+childpro.execFileSync('git', ['status'], {stdio: 'inherit'});
 
 process.exit();

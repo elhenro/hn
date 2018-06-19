@@ -74,6 +74,7 @@ const choices = [
         'aliases',
         'music',
         'add cmd',
+        'edit cmd',
         'add website',
         'monitor',
         'change theme',
@@ -112,6 +113,7 @@ const choices = [
     else if (res.cmd === 'monitor'){monitor();}
     else if (res.cmd === 'run command'){runCmd();}
     else if (res.cmd === 'add cmd'){addCmd();}
+    else if (res.cmd === 'edit cmd'){editCmd();}
     else if (res.cmd === 'add website'){addWebsite();}
     else if (res.cmd === 'ssh'){runSsh();}
     else if (res.cmd === 'projects'){runProjects();}
@@ -221,12 +223,16 @@ function addWebsite(site){
         function w(path, data){
             fs.appendFileSync(path, data);};
         const path =  require('os').homedir() + '/.websites';
-        w(path, res.site + '\r\n');
+        u(path, res.site + '\r\n');
         console.log(res.site, ' added ');});
 }
 
 function runMusic() {
     liveSearchOptionsFromDir('Music', 'music', '  hn - music', 20, 'mpv');
+}
+
+function editCmd() {
+    liveSearchOptionsToEdit(pathToHn+'/cmd', 'cmd', '  hn - edit command', 5, 'vim');
 }
 
 function liveSearchOptionsFromDir(dir, name, message, listSize, command){
@@ -295,9 +301,38 @@ function liveSearchOptionsToRequire(dir, name, message, listSize){
         require(cmdDir + res.item);
     });
 }
+function liveSearchOptionsToEdit(dir, name, message, listSize, command){
+    const searchDir = require('os').homedir()+'/'+ dir;
+    const searchList = [];
+    fs.readdirSync(searchDir).forEach(file => {
+        searchList.push(file);
+    })
+    function search(answers, input) {
+    input = input || '';
+    return new Promise(function(resolve) {
+        setTimeout(function() {
+            var fuzzyResult = fuzzy.filter(input, searchList);
+            resolve(fuzzyResult.map(function(el) {
+                return el.original;
+            }));}, _.random(30, 500));});}
+    inquirer.prompt([{
+            type: 'autocomplete',
+            name: 'item',
+            suggestOnly: false,
+            message: message,
+            source: search,
+            pageSize: listSize,
+            validate: function(val) {return val? true: '..';}}
+	]).then(function(res) {
+        const resPath = searchDir + '/' + res.item;
+        //console.log(command, res.item);
+        const itemPath = cmdDir + res.item;
+        childpro.execFileSync(command, [itemPath], {stdio: 'inherit'});
+    });
+}
+
 function liveSearchInFileLines(file, name, message, listSize, command){
     const List = [];
-
     fs.readFile( file, 'utf8',
       function (err, data) {
        if(err) throw err;

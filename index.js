@@ -1,6 +1,7 @@
 const pathToHn = '/web/hn';
 const rootDir = require('os').homedir() + pathToHn;
 const cmdDir = rootDir + '/cmd/';
+const os = 'macOs';
 
 const shell = require('shelljs');
 const inquirer = require('inquirer');
@@ -252,16 +253,16 @@ function liveSearchOptionsFromDir(dir, name, message, listSize, command){
             validate: function(val) {return val? true: '..';}}
 	]).then(function(res) {
         const resPath = searchDir + '/' + res.item;
+        const imgPath = '"' + resPath + '"';
         if (command === 'wal'){
-            console.log(require('os').homedir()+'/bin/wal/wal' + '-i' + resPath);
-
-            // linux with wal
-            //childpro.execFileSync(require('os').homedir()+'/bin/wal/wal' , ['-i', resPath], {silent: false, stdio: 'inherit'});
-
-            // macOs alternative (only wp, no scheme)
-            childpro.execFileSync('osascript', ['-e', ('tell application "Finder" to set desktop picture to POSIX file "'+ resPath +'"')], {silent: false, stdio: 'inherit'});
-
-            //require('./cmd/c.js');
+            if (os === 'macOs') {
+                //console.log('selected: ' + imgPath);
+                // note that this will shuffle (select random image from dir) if system settings/wallpaper is using the same directory
+                childpro.execFileSync('osascript', ['-e', ('tell application "Finder" to set desktop picture to POSIX file '+ imgPath +'')], {silent: false, stdio: 'inherit'});
+            }else{
+                childpro.execFileSync(require('os').homedir()+'/bin/wal/wal' , ['-i', resPath], {silent: false, stdio: 'inherit'});
+                require('./cmd/c.js');
+            }
         } else {
             childpro.execFileSync(command , [resPath], {stdio: 'inherit'});
         }

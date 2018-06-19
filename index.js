@@ -378,7 +378,11 @@ function liveSearchInFileLines(file, name, message, listSize, command, par1, par
             console.log(cmd);
             childpro.execFileSync(command, [cmd], {stdio: 'inherit'});
         } else {
-            childpro.execFileSync(command, [res.item, par1, par2], {stdio: 'inherit'});
+            if (par2){
+                childpro.execFileSync(command, [res.item, par1, par2], {stdio: 'inherit'});
+            } else {
+                childpro.execFileSync(command, [res.item], {stdio: 'inherit'});
+            }
         }
     });
 }
